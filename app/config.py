@@ -25,3 +25,5 @@ class Config:
     USERS = json.loads(os.environ.get("USERS", "[]"))
 
     USER_CMD_DICT = {}
+
+    UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO", "https://github.com/thedragonsinn/design_verse_bot")
