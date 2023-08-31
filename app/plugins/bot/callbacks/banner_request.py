@@ -30,65 +30,52 @@ DB_NAME = DB.BANNER_REQUESTS
 
 
 @bot.add_cmd(cmd="banner_confirmation", cb=True)
-async def handle_confirmation(bot, qb):
-    cooldown = await check_cooldown(qb.from_user.id)
+async def handle_confirmation(bot, cb):
+    cooldown = await check_cooldown(cb.from_user.id)
     if cooldown:
-        return await qb.edit_message_text(cooldown)
+        return await cb.edit_message_text(cooldown)
     buttons = make_buttons(
-        [("yes", dict(cmd="banner_request_yes")), ("no", dict(cmd="banner_request_no"))]
+        [("yes", dict(cmd="banner_request_yes")), ("no", dict(cmd="cancel_request"))]
     )
-    await qb.edit_message_text(
+    await cb.edit_message_text(
         text=f"You can Request only once a week.\nProceed?",
         reply_markup=InlineKeyboardMarkup([buttons]),
     )
 
 
-@bot.add_cmd(cmd=["banner_request_yes", "banner_request_no"], cb=True)
-async def banner_request_submitter(bot: bot, qb: CallbackQuery):
-    if qb.qbdata["cmd"] == "banner_request_no":
-        return await qb.edit_message_text(f"Cancelled....")
-
-    u_id = qb.from_user.id
-
-    await qb.edit_message_text(BRT)
-
+@bot.add_cmd(cmd="banner_request_yes", cb=True)
+async def banner_request_submitter(bot: bot, cb: CallbackQuery):
+    u_id = cb.from_user.id
+    await cb.edit_message_text(BRT)
     await sleeper(u_id)
-
     if Config.CONV_DICT[u_id] in {"Cancelled.", "Timeout."}:
         await bot.send_message(
             chat_id=u_id,
             text=f"{Config.CONV_DICT[u_id]}\nSend /submit again to start over.",
         )
         return Config.CONV_DICT.pop(u_id, "")
-
     msg_id = Config.CONV_DICT.pop(u_id)
-
     messages = await get_messages(
-        chat_id=u_id, msg_ids=[i for i in range(qb.message.id, msg_id)]
+        chat_id=u_id, msg_ids=[i for i in range(cb.message.id, msg_id)]
     )
-
     if not messages:
         return await bot.send_message(
             chat_id=u_id, text="Send 1-5 messages max.\nSend /submit to start over."
         )
-
     await asyncio.gather(
         add_data(DB_NAME, id=u_id, data={"banner_request_datetime": datetime.now()}),
         bot.send_message(chat_id=u_id, text="Request Received."),
     )
-
     await forward_messages(messages)
-
     buttons = make_buttons(
         [
             ("accept", dict(cmd="accept_banner_request", user=u_id)),
             ("ban", dict(cmd="ban", user=u_id)),
         ]
     )
-
     await bot.send_message(
         chat_id=Config.ADMIN_CHAT,
-        text=f"{qb.from_user.mention} sent a banner request.",
+        text=f"{cb.from_user.mention} sent a banner request.",
         reply_markup=InlineKeyboardMarkup([buttons]),
     )
 
@@ -117,13 +104,13 @@ async def check_cooldown(u_id):
 
 
 @bot.add_cmd(cmd="accept_banner_request", cb=True)
-async def handle_request(bot: bot, qb: CallbackQuery):
-    user = await bot.get_users(qb.qbdata["user"])
+async def handle_request(bot: bot, cb: CallbackQuery):
+    user = await bot.get_users(cb.cbdata["user"])
     await bot.send_message(
         chat_id=user.username or user.id,
-        text=f"{qb.from_user.mention} has accepted your Banner request.\nThey will contact you soon.",
+        text=f"{cb.from_user.mention} has accepted your Banner request.\nThey will contact you soon.",
     )
-    await qb.edit_message_text(
-        f"User:{user.mention} 's Banner request has been accepted by {qb.from_user.mention} "
+    await cb.edit_message_text(
+        f"User:{user.mention} 's Banner request has been accepted by {cb.from_user.mention} "
     )
     await add_data(DB_NAME, id=user.id, data=dict(accepted=True))

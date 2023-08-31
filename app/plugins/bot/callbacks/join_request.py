@@ -38,7 +38,7 @@ async def handle_confirmation(bot, qb):
                 f"Hey there !\nOur requests are currently full, please wait for the next week and retry ! "
             )
     buttons = make_buttons(
-        [("yes", dict(cmd="join_request_yes")), ("no", dict(cmd="join_request_no"))]
+        [("yes", dict(cmd="join_request_yes")), ("no", dict(cmd="cancel_request"))]
     )
     await qb.edit_message_text(
         text=f"You can Request only once a week.\nProceed?",
@@ -46,24 +46,17 @@ async def handle_confirmation(bot, qb):
     )
 
 
-@bot.add_cmd(cmd=["join_request_yes", "join_request_no"], cb=True)
+@bot.add_cmd(cmd="join_request_yes", cb=True)
 async def join_request_submitter(bot: bot, qb: CallbackQuery):
-    if qb.qbdata["cmd"] == "join_request_no":
-        return await qb.edit_message_text(f"Submission Cancelled.")
-
     await qb.edit_message_text(JRT)
-
     u_id = qb.from_user.id
-
     await sleeper(u_id)
-
     if Config.CONV_DICT[u_id] in {"Cancelled.", "Timeout."}:
         await bot.send_message(
             chat_id=u_id,
             text=f"{Config.CONV_DICT[u_id]}\nSend /submit again to start over.",
         )
         return Config.CONV_DICT.pop(u_id, "")
-
     msg_id = Config.CONV_DICT.pop(u_id)
     messages = await get_messages(
         chat_id=u_id, msg_ids=[i for i in range(qb.message.id, msg_id)]
@@ -72,14 +65,11 @@ async def join_request_submitter(bot: bot, qb: CallbackQuery):
         return await bot.send_message(
             chat_id=u_id, text="Send 1-5 messages max.\nSend /submit to start over."
         )
-
     await asyncio.gather(
         add_data(DB_NAME, id=u_id, data={"join_request_datetime": datetime.now()}),
         bot.send_message(chat_id=u_id, text="Request Received."),
     )
-
     await forward_messages(messages)
-
     buttons = make_buttons(
         [
             ("accept", dict(cmd="accept_join_request", user=u_id)),

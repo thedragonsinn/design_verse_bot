@@ -29,21 +29,21 @@ async def cmd_dispatcher(bot: bot, message):
 
 
 @bot.on_callback_query()
-async def callback_handler(bot: bot, qb):
+async def callback_handler(bot: bot, cb):
     if (
-        qb.message.chat.type == ChatType.PRIVATE
-        and (datetime.now() - qb.message.date).total_seconds() > 30
+        cb.message.chat.type == ChatType.PRIVATE
+        and (datetime.now() - cb.message.date).total_seconds() > 30
     ):
-        return await qb.edit_message_text(f"Query Expired. Try again.")
-    banned = await DB.BANNED.find_one({"_id": qb.from_user.id})
+        return await cb.edit_message_text(f"Query Expired. Try again.")
+    banned = await DB.BANNED.find_one({"_id": cb.from_user.id})
     if banned:
         return
-    qb = CallbackQuery.parse_qb(qb)
-    func = Config.CALLBACK_DICT.get(qb.cmd)
+    cb = CallbackQuery.parse_cb(cb)
+    func = Config.CALLBACK_DICT.get(cb.cmd)
     if not func:
         return
-    coro = func(bot, qb)
-    await run_coro(coro, message)
+    coro = func(bot, cb)
+    await run_coro(coro, Message.parse_message(cb.message))
 
 
 async def run_coro(coro, message):

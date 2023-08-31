@@ -10,10 +10,10 @@ class CallbackQuery(Callback_Query):
 
     @cached_property
     def cmd(self):
-        return self.qbdata.get("cmd")
+        return self.cbdata.get("cmd")
 
     @cached_property
-    def qbdata(self):
+    def cbdata(self):
         if not self.data:
             return {}
         try:
@@ -22,5 +22,5 @@ class CallbackQuery(Callback_Query):
             return {}
 
     @classmethod
-    def parse_qb(cls, qb):
-        return cls(qb)
+    def parse_cb(cls, cb):
+        return cls(cb)
