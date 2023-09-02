@@ -50,17 +50,6 @@ class Message(Msg):
         return self.replied.task_id if self.replied else None
 
     @cached_property
-    def reply_text_list(self):
-        reply_text_list = []
-        if (
-            self.replied
-            and (reply_text := self.replied.text)
-            and "dl" in self.text_list[0]
-        ):
-            reply_text_list = self.replied.text_list
-        return reply_text_list
-
-    @cached_property
     def task_id(self):
         return f"{self.chat.id}-{self.id}"
 

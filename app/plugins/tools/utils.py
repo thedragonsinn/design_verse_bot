@@ -23,6 +23,15 @@ async def restart(bot, message, u_resp=None):
         os.environ["RESTART_CHAT"] = str(reply.chat.id)
     await bot.restart(hard="-h" in message.flags)
 
+@bot.add_cmd(cmd="repo")
+async def sauce(bot, message):
+    await bot.send_message(
+        chat_id=message.chat.id,
+        text="<a href='https://github.com/thedragonsinn/design_verse_bot'>Design Verse Bot.</a>",
+        reply_to_message_id=message.reply_id or message.id,
+        disable_web_page_preview=True,
+    )
+
 
 @bot.add_cmd(cmd="update")
 async def updater(bot, message):

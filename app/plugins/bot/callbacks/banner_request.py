@@ -30,7 +30,7 @@ DB_NAME = DB.BANNER_REQUESTS
 
 
 @bot.add_cmd(cmd="banner_confirmation", cb=True)
-async def handle_confirmation(bot, cb):
+async def handle_confirmation(bot: bot, cb: CallbackQuery):
     cooldown = await check_cooldown(cb.from_user.id)
     if cooldown:
         return await cb.edit_message_text(cooldown)

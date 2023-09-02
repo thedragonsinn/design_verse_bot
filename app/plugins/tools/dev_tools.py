@@ -6,7 +6,7 @@ from io import StringIO
 
 from pyrogram.enums import ParseMode
 
-from app import Config, bot
+from app import Config, bot, DB # isort:skip
 
 from app.utils import shell, aiohttp_tools as aio  # isort:skip
 
@@ -19,7 +19,7 @@ async def run_cmd(bot, message):
         proc_stdout = await asyncio.Task(shell.run_shell_cmd(cmd), name=reply.task_id)
     except asyncio.exceptions.CancelledError:
         return await reply.edit("`Cancelled...`")
-    output = f"`${cmd}`\n\n`{proc_stdout}`"
+    output = f"~$`{cmd}`\n\n`{proc_stdout}`"
     return await reply.edit(output, name="sh.txt", disable_web_page_preview=True)
 
 
@@ -45,7 +45,7 @@ async def live_shell(bot, message):
             await asyncio.Task(asyncio.sleep(sleep_for), name=reply.task_id)
             sleep_for += 1
         return await reply.edit(
-            f"`$ {cmd}\n\n``{sub_process.full_std}`",
+            f"~$`{cmd}\n\n``{sub_process.full_std}`",
             name="shell.txt",
             disable_web_page_preview=True,
         )

@@ -1,3 +1,5 @@
+import asyncio
+
 from pyrogram.types import InlineKeyboardMarkup
 
 from app import DB, Config, bot
@@ -24,13 +26,14 @@ async def done(bot: bot, message: Message):
 
 @bot.add_cmd(cmd="start", user=True)
 async def start(bot: bot, message: Message):
-    await message.reply("Welcome.")
-    await add_data(
+    coros = (message.reply("Welcome."),
+        add_data(
         DB.USERS,
         id=message.from_user.id,
         data={"user": extract_user_data(message.from_user)},
-    )
-
+        ),
+        bot.log(text=f"{message.from_user.mention} started the bot."))
+    await asyncio.gather(*coros)
 
 @bot.add_cmd(cmd="submit", user=True)
 async def submit(bot: bot, message: Message):

@@ -29,4 +29,4 @@ async def restrict_user(bot: bot, cb: CallbackQuery):
 
 @bot.add_cmd(cmd="cancel_request", cb=True)
 async def join_request_submitter(bot: bot, cb: CallbackQuery):
-     return await cb.edit_message_text(f"Submission Cancelled.")
+    return await cb.edit_message_text(f"Submission Cancelled.")
