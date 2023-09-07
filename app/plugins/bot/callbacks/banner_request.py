@@ -15,15 +15,15 @@ from app.utils.db_utils import add_data
 
 # Banner Request Template
 BRT = """
-You can request for a banner by filling out the form below:
+You can request a banner by completing the form below:
 
-1) The name of the project you want the banner for along with their logo ( if available ).
-2) What info should the banner contain? , along with any sample layout you might want the banner to be in .
-3) Within how many days do you want the banner ?
+1. Provide the project's name for the banner and include the logo if available.
+2. Specify the information you'd like the banner to include and any preferred layout samples.
+3. Indicate the desired timeframe for receiving the banner.
 
-Do note that if your request is accepted you will be contacted by the admin that accepted you ( Logo requests will be rejected , if you don't bribe us that is )
+Please keep in mind that if your request is accepted, the admin who takes it will get in touch with you. (Please note: Logo requests will be declined unless you choose to "bribe" us.)
 
-Send /done when you are done submitting your work or /cancel to cancel.
+When you're finished, send /done to submit your request or /cancel to cancel it.
 """
 
 DB_NAME = DB.BANNER_REQUESTS
@@ -108,7 +108,7 @@ async def handle_request(bot: bot, cb: CallbackQuery):
     user = await bot.get_users(cb.cbdata["user"])
     await bot.send_message(
         chat_id=user.username or user.id,
-        text=f"{cb.from_user.mention} has accepted your Banner request.\nThey will contact you soon.",
+        text=f"{cb.from_user.mention} has accepted your banner request.\nThey will contact you soon.",
     )
     await cb.edit_message_text(
         f"User:{user.mention} 's Banner request has been accepted by {cb.from_user.mention} "
