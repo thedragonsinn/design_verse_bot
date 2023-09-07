@@ -14,14 +14,17 @@ from app.plugins.bot.helpers import (
 from app.utils.db_utils import add_data
 
 # Join Request Template
-JRT = """Hey there!
-To join Design Verse, please submit your portfolio (any work you have done) in the following format:
+JRT = """
+Hello,
 
-1. Your name
-2. Why do you want to join Design Verse?
-3. A link to your portfolio (or send your work to the bot in the form of a file. Maximum files allowed: 5 )
+To apply for membership in Design Verse, kindly provide your portfolio in the following format:
 
-Send /done when you are done submitting your work or /cancel to cancel."""
+1. Your full name.
+2. The reason for your interest in joining Design Verse.
+3. Please share a link to your portfolio, or alternatively, send your work to the bot as files (you can send up to 5 files).
+
+When you have completed your submission, send /done to confirm, or use /cancel to cancel your application.
+"""
 
 DB_NAME = DB.USERS
 
