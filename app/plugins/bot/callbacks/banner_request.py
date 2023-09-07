@@ -99,7 +99,7 @@ async def check_cooldown(u_id):
         # If it's not accepted but it's not been a week ask to wait another 7
         # days to try again.
         if not accepted and cooldown < 7:
-            return "Hello,/n/nWe're currently accepting one request per week. Please note that if no admin picks up the task within 24 hours, it will be automatically canceled. Thanks for your cooperation!"
+            return "Hello,\n\nWe're currently accepting one request per week. Please note that if no admin picks up the task within 24 hours, it will be automatically canceled. Thanks for your cooperation!"
     await add_data(DB_NAME, id=u_id, data={"count": user.get("count", 0) + 1})
 
 
