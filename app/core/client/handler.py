@@ -10,26 +10,26 @@ from app.core import CallbackQuery, Message, filters
 
 @bot.on_message(filters.cmd_filter)
 @bot.on_edited_message(filters.cmd_filter)
-async def cmd_dispatcher(bot, message):
-    message = Message.parse_message(message)
+async def cmd_dispatcher(bot: bot, message) -> None:
+    message: Message = Message.parse_message(message)
     func = Config.CMD_DICT[message.cmd]
     coro = func(bot, message)
     await run_coro(coro, message)
 
 
 @bot.on_message(filters.user_filter)
-async def cmd_dispatcher(bot: bot, message):
+async def cmd_dispatcher(bot: bot, message) -> None:
     banned = await DB.BANNED.find_one({"_id": message.from_user.id})
     if banned:
         return
-    message = Message.parse_message(message)
+    message: Message = Message.parse_message(message)
     func = Config.USER_CMD_DICT[message.cmd]
     coro = func(bot, message)
     await run_coro(coro, message)
 
 
 @bot.on_callback_query()
-async def callback_handler(bot: bot, cb):
+async def callback_handler(bot: bot, cb) -> None:
     if (
         cb.message.chat.type == ChatType.PRIVATE
         and (datetime.now() - cb.message.date).total_seconds() > 30
@@ -38,7 +38,7 @@ async def callback_handler(bot: bot, cb):
     banned = await DB.BANNED.find_one({"_id": cb.from_user.id})
     if banned:
         return
-    cb = CallbackQuery.parse_cb(cb)
+    cb: CallbackQuery = CallbackQuery.parse_cb(cb)
     func = Config.CALLBACK_DICT.get(cb.cmd)
     if not func:
         return
@@ -46,7 +46,7 @@ async def callback_handler(bot: bot, cb):
     await run_coro(coro, Message.parse_message(cb.message))
 
 
-async def run_coro(coro, message):
+async def run_coro(coro, message) -> None:
     try:
         task = asyncio.Task(coro, name=message.task_id)
         await task

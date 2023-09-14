@@ -5,15 +5,15 @@ from pyrogram.types import CallbackQuery as Callback_Query
 
 
 class CallbackQuery(Callback_Query):
-    def __init__(self, query):
+    def __init__(self, query: Callback_Query):
         super().__dict__.update(query.__dict__)
 
     @cached_property
-    def cmd(self):
-        return self.cbdata.get("cmd")
+    def cmd(self) -> str | None:
+        return self.cb_data.get("cmd")
 
     @cached_property
-    def cbdata(self):
+    def cb_data(self) -> dict:
         if not self.data:
             return {}
         try:
@@ -22,5 +22,5 @@ class CallbackQuery(Callback_Query):
             return {}
 
     @classmethod
-    def parse_cb(cls, cb):
+    def parse_cb(cls, cb) -> "CallbackQuery":
         return cls(cb)

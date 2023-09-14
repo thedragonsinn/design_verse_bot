@@ -1,29 +1,31 @@
 import json
 import os
+from typing import Coroutine
 
 
 class Config:
+    ADMIN_CHAT: int = int(os.environ.get("ADMIN_CHAT"))
 
-    ADMIN_CHAT = int(os.environ.get("ADMIN_CHAT"))
+    CMD_DICT: dict[Coroutine] = {}
 
-    CMD_DICT = {}
+    CALLBACK_DICT: dict[Coroutine] = {}
 
-    CALLBACK_DICT = {}
+    CONV_DICT: dict[Coroutine] = {}
 
-    CONV_DICT = {}
+    DEV_MODE: int = int(os.environ.get("DEV_MODE", 0))
 
-    DEV_MODE = int(os.environ.get("DEV_MODE", 0))
+    DB_URL: str = os.environ.get("DB_URL")
 
-    DB_URL = os.environ.get("DB_URL")
+    MAIN_CHAT: int = int(os.environ.get("MAIN_CHAT"))
 
-    MAIN_CHAT = int(os.environ.get("MAIN_CHAT"))
+    LOG_CHAT: int = int(os.environ.get("LOG_CHAT"))
 
-    LOG_CHAT = int(os.environ.get("LOG_CHAT"))
+    TRIGGER: str = "/"
 
-    TRIGGER = "/"
+    USERS: list[int] = json.loads(os.environ.get("USERS", "[]"))
 
-    USERS = json.loads(os.environ.get("USERS", "[]"))
+    USER_CMD_DICT: dict[Coroutine] = {}
 
-    USER_CMD_DICT = {}
-
-    UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO", "https://github.com/thedragonsinn/design_verse_bot")
+    UPSTREAM_REPO: str = os.environ.get(
+        "UPSTREAM_REPO", "https://github.com/thedragonsinn/design_verse_bot"
+    )

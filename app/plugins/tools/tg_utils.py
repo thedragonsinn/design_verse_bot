@@ -1,25 +1,26 @@
 from pyrogram.enums import ChatType
-from pyrogram.types import Message
 
-from app import bot
+from app import Config, bot
+from app.core import Message
+
 
 # Delete replied and command message
-
-
 @bot.add_cmd(cmd="del")
-async def delete_message(bot, message: Message):
+async def delete_message(bot: bot, message: Message) -> None:
     await message.delete(reply=True)
 
 
 # Delete Multiple messages from replied to command.
 @bot.add_cmd(cmd="purge")
-async def purge_(bot, message: Message):
-    reply = message.replied
-    if not reply:
+async def purge_(bot: bot, message: Message) -> None | Message:
+    start_message: int = message.reply_id
+    if not start_message:
         return await message.reply("reply to a message")
-    start_message = reply.id
-    end_message = message.id
-    messages = [end_message] + [i for i in range(int(start_message), int(end_message))]
+    end_message: int = message.id
+    messages: list[int] = [
+        end_message,
+        *[i for i in range(int(start_message), int(end_message))],
+    ]
     await bot.delete_messages(
         chat_id=message.chat.id, message_ids=messages, revoke=True
     )
@@ -42,11 +43,16 @@ async def get_ids(bot, message):
 
 
 @bot.add_cmd(cmd="leave")
-async def leave_chat(bot, message):
+async def leave_chat(bot: bot, message: Message) -> None:
     if message.input:
         chat = message.input
     else:
         chat = message.chat.id
+        await message.reply(
+            f"Leaving current chat in 5\nReply with `{Config.TRIGGER}c` to cancel",
+            del_in=5,
+            block=True,
+        )
     try:
         await bot.leave_chat(chat)
     except Exception as e:
@@ -54,8 +60,8 @@ async def leave_chat(bot, message):
 
 
 @bot.add_cmd(cmd="reply")
-async def reply(bot, message):
-    text = message.input
+async def reply(bot: bot, message: Message) -> None:
+    text: str = message.input
     await bot.send_message(
         chat_id=message.chat.id,
         text=text,

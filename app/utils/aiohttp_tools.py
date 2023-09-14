@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 import aiohttp
 
-SESSION = None
+SESSION: aiohttp.ClientSession | None = None
 
 
 class MediaType(Enum):
@@ -17,7 +17,7 @@ class MediaType(Enum):
     MESSAGE = auto()
 
 
-async def session_switch():
+async def session_switch() -> None:
     if not SESSION:
         globals().update({"SESSION": aiohttp.ClientSession()})
     else:
@@ -30,21 +30,21 @@ async def get_json(
     params: dict = None,
     json_: bool = False,
     timeout: int = 10,
-):
+) -> dict | None:
     try:
         async with SESSION.get(
             url=url, headers=headers, params=params, timeout=timeout
         ) as ses:
             if json_:
-                ret_json = await ses.json()
+                ret_json: dict = await ses.json()
             else:
-                ret_json = json.loads(await ses.text())
+                ret_json: dict = json.loads(await ses.text())
             return ret_json
     except BaseException:
         return
 
 
-async def in_memory_dl(url: str):
+async def in_memory_dl(url: str) -> BytesIO:
     async with SESSION.get(url) as remote_file:
         bytes_data = await remote_file.read()
     file = BytesIO(bytes_data)
@@ -52,7 +52,7 @@ async def in_memory_dl(url: str):
     return file
 
 
-def get_filename(url):
+def get_filename(url: str) -> str:
     name = basename(urlparse(url).path.rstrip("/")).lower()
     if name.endswith((".webp", ".heic")):
         name = name + ".jpg"
@@ -61,7 +61,7 @@ def get_filename(url):
     return name
 
 
-def get_type(url):
+def get_type(url: str) -> MediaType:
     name, ext = splitext(get_filename(url))
     if ext in {".png", ".jpg", ".jpeg"}:
         return MediaType.PHOTO
@@ -71,7 +71,7 @@ def get_type(url):
         return MediaType.GIF
 
 
-async def thumb_dl(thumb):
+async def thumb_dl(thumb: str | None) -> BytesIO | str | None:
     if not thumb or not thumb.startswith("http"):
         return thumb
     return await in_memory_dl(thumb)

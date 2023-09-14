@@ -7,10 +7,18 @@ from io import BytesIO
 
 from pyrogram import Client, idle
 from pyrogram.enums import ParseMode
+from pyrogram.types import Message as Msg
 
 from app import DB, Config
 from app.core import Message
 from app.utils import aiohttp_tools
+
+
+async def import_modules():
+    for py_module in glob.glob(pathname="app/**/*.py", recursive=True):
+        name = os.path.splitext(py_module)[0]
+        py_name = name.replace("/", ".")
+        importlib.import_module(py_name)
 
 
 class BOT(Client):
@@ -26,7 +34,8 @@ class BOT(Client):
             max_concurrent_transmissions=2,
         )
 
-    def add_cmd(self, cmd, cb: bool = False, user: bool = False):
+    @staticmethod
+    def add_cmd(cmd, cb: bool = False, user: bool = False):
         def the_decorator(func):
             @wraps(func)
             def wrapper():
@@ -46,18 +55,18 @@ class BOT(Client):
 
         return the_decorator
 
-    async def boot(self):
+    async def boot(self) -> None:
         await super().start()
-        await self.import_modules()
+        await import_modules()
         await aiohttp_tools.session_switch()
         await self.edit_restart_msg()
-        await self.log(text="<i>Started</i>")
         print("started")
+        await self.log(text="<i>Started</i>")
         await idle()
         await aiohttp_tools.session_switch()
         DB._client.close()
 
-    async def edit_restart_msg(self):
+    async def edit_restart_msg(self) -> None:
         restart_msg = int(os.environ.get("RESTART_MSG", 0))
         restart_chat = int(os.environ.get("RESTART_CHAT", 0))
         if restart_msg and restart_chat:
@@ -68,12 +77,6 @@ class BOT(Client):
             os.environ.pop("RESTART_MSG", "")
             os.environ.pop("RESTART_CHAT", "")
 
-    async def import_modules(self):
-        for py_module in glob.glob("app/**/*.py", recursive=True):
-            name = os.path.splitext(py_module)[0]
-            py_name = name.replace("/", ".")
-            importlib.import_module(py_name)
-
     async def log(
         self,
         text="",
@@ -83,9 +86,14 @@ class BOT(Client):
         name="log.txt",
         disable_web_page_preview=True,
         parse_mode=ParseMode.HTML,
-    ):
+    ) -> Message | Msg:
         if traceback:
-            text = f"#Traceback\n<b>Function:</b> {func}\n<b>Chat:</b> {chat}\n<b>Traceback:</b>\n<code>{traceback}</code>"
+            text = f"""
+#Traceback
+<b>Function:</b> {func}
+<b>Chat:</b> {chat}
+<b>Traceback:</b>
+<code>{traceback}</code>"""
         return await self.send_message(
             chat_id=Config.LOG_CHAT,
             text=text,
@@ -94,17 +102,19 @@ class BOT(Client):
             parse_mode=parse_mode,
         )
 
-    async def restart(self, hard=False):
+    async def restart(self, hard=False) -> None:
         await aiohttp_tools.session_switch()
         await super().stop(block=False)
         DB._client.close()
-        args = [sys.executable, sys.executable, "-m", "app"]
         if hard:
-            os.execle(*args, {})
-        os.execl(*args)
+            os.execl("/bin/bash", "/bin/bash", "run")
+        os.execl(sys.executable, sys.executable, "-m", "app")
 
-    async def send_message(self, chat_id, text, name: str = "output.txt", **kwargs):
-        if len(str(text)) < 4096:
+    async def send_message(
+        self, chat_id: int | str, text, name: str = "output.txt", **kwargs
+    ) -> Message | Msg:
+        text = str(text)
+        if len(text) < 4096:
             return Message.parse_message(
                 (await super().send_message(chat_id=chat_id, text=text, **kwargs))
             )

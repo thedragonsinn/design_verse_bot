@@ -6,30 +6,33 @@ from io import StringIO
 
 from pyrogram.enums import ParseMode
 
-from app import Config, bot, DB # isort:skip
+from app.core import Message
 
+from app import Config, bot, DB  # isort:skip
 from app.utils import shell, aiohttp_tools as aio  # isort:skip
 
 
 # Run shell commands
-async def run_cmd(bot, message):
-    cmd = message.input.strip()
-    reply = await message.reply("executing...")
+async def run_cmd(bot: bot, message: Message) -> Message | None:
+    cmd: str = message.input.strip()
+    reply: Message = await message.reply("executing...")
     try:
-        proc_stdout = await asyncio.Task(shell.run_shell_cmd(cmd), name=reply.task_id)
+        proc_stdout: str = await asyncio.Task(
+            shell.run_shell_cmd(cmd), name=reply.task_id
+        )
     except asyncio.exceptions.CancelledError:
         return await reply.edit("`Cancelled...`")
-    output = f"~$`{cmd}`\n\n`{proc_stdout}`"
+    output: str = f"~$`{cmd}`\n\n`{proc_stdout}`"
     return await reply.edit(output, name="sh.txt", disable_web_page_preview=True)
 
 
 # Shell with Live Output
-async def live_shell(bot, message):
-    cmd = message.input.strip()
-    reply = await message.reply("`getting live output....`")
-    sub_process = await shell.AsyncShell.run_cmd(cmd)
-    sleep_for = 1
-    output = ""
+async def live_shell(bot: bot, message: Message) -> Message | None:
+    cmd: str = message.input.strip()
+    reply: Message = await message.reply("`getting live output....`")
+    sub_process: shell.AsyncShell = await shell.AsyncShell.run_cmd(cmd)
+    sleep_for: int = 1
+    output: str = ""
     try:
         async for stdout in sub_process.get_output():
             if output != stdout:
@@ -57,11 +60,11 @@ async def live_shell(bot, message):
 # Run Python code
 
 
-async def executor(bot, message):
-    code = message.flt_input.strip()
+async def executor(bot: bot, message: Message) -> Message | None:
+    code: str = message.flt_input.strip()
     if not code:
         return await message.reply("exec Jo mama?")
-    reply = await message.reply("executing")
+    reply: Message = await message.reply("executing")
     sys.stdout = codeOut = StringIO()
     sys.stderr = codeErr = StringIO()
     # Indent code as per proper python syntax
@@ -83,7 +86,9 @@ async def executor(bot, message):
         output = "\n\n".join([output, str(func_out)]).strip()
     if "-s" not in message.flags:
         output = f"> `{code}`\n\n>>  `{output}`"
-    return await reply.edit(
+    else:
+        return await reply.delete()
+    await reply.edit(
         output,
         name="exec.txt",
         disable_web_page_preview=True,
@@ -91,17 +96,17 @@ async def executor(bot, message):
     )
 
 
-async def loader(bot, message):
+async def loader(bot: bot, message: Message) -> Message | None:
     if (
         not message.replied
         or not message.replied.document
         or not message.replied.document.file_name.endswith(".py")
     ):
         return await message.reply("reply to a plugin.")
-    reply = await message.reply("Loading....")
-    file_name = message.replied.document.file_name.rstrip(".py")
+    reply: Message = await message.reply("Loading....")
+    file_name: str = message.replied.document.file_name.rstrip(".py")
     reload = sys.modules.pop(f"app.temp.{file_name}", None)
-    status = "Reloaded" if reload else "Loaded"
+    status: str = "Reloaded" if reload else "Loaded"
     await message.replied.download("app/temp/")
     try:
         importlib.import_module(f"app.temp.{file_name}")
@@ -111,19 +116,21 @@ async def loader(bot, message):
 
 
 @bot.add_cmd(cmd="c")
-async def cancel_task(bot, message):
-    task_id = message.replied_task_id
+async def cancel_task(bot: bot, message: Message) -> Message | None:
+    task_id: str | None = message.replied_task_id
     if not task_id:
         return await message.reply(
-            "Reply To a Command or Bot's Response Message.", del_in=8
+            text="Reply To a Command or Bot's Response Message.", del_in=8
         )
-    all_tasks = asyncio.all_tasks()
-    tasks = [x for x in all_tasks if x.get_name() == task_id]
+    all_tasks: set[asyncio.all_tasks] = asyncio.all_tasks()
+    tasks: list[asyncio.Task] | None = [x for x in all_tasks if x.get_name() == task_id]
     if not tasks:
-        return await message.reply("Task not in Currently Running Tasks.", del_in=8)
-    response = ""
+        return await message.reply(
+            text="Task not in Currently Running Tasks.", del_in=8
+        )
+    response: str = ""
     for task in tasks:
-        status = task.cancel()
+        status: bool = task.cancel()
         response += f"Task: __{task.get_name()}__\nCancelled: __{status}__\n"
     await message.reply(response, del_in=5)
 

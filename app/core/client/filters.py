@@ -4,7 +4,7 @@ from pyrogram.enums import ChatType
 from app import Config
 
 
-def dynamic_cmd_filter(_, __, message):
+def dynamic_cmd_filter(_, __, message) -> bool:
     if (
         not message.text
         or not message.text.startswith(Config.TRIGGER)
@@ -20,7 +20,7 @@ def dynamic_cmd_filter(_, __, message):
     return bool(cmd_check and reaction_check)
 
 
-def dynamic_user_cmd_filter(_, __, message):
+def dynamic_user_cmd_filter(_, __, message) -> bool:
     if (
         message.chat.type != ChatType.PRIVATE
         or not message.text
